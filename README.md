@@ -1,11 +1,11 @@
-# nodemailer-mock
+# nodemailer-mock-pooled
 
-[![nodemailer-mock](https://img.shields.io/npm/v/nodemailer-mock.svg)](https://www.npmjs.com/package/nodemailer-mock)
-![Build Status](https://jenkins.doublesharp.com/badges/build/nodemailer-mock.svg)
-![Code Coverage](https://jenkins.doublesharp.com/badges/coverage/nodemailer-mock.svg)
-[![Dependency Status](https://david-dm.org/doublesharp/nodemailer-mock.svg)](https://david-dm.org/doublesharp/nodemailer-mock)
-[![Dev Dependency Status](https://david-dm.org/doublesharp/nodemailer-mock/dev-status.svg)](https://david-dm.org/doublesharp/nodemailer-mock?type=dev)
-![Downloads](https://img.shields.io/npm/dt/nodemailer-mock.svg)
+[![nodemailer-mock-pooled](https://img.shields.io/npm/v/nodemailer-mock-pooled.svg)](https://www.npmjs.com/package/nodemailer-mock-pooled)
+![Build Status](https://jenkins.doublesharp.com/badges/build/nodemailer-mock-pooled.svg)
+![Code Coverage](https://jenkins.doublesharp.com/badges/coverage/nodemailer-mock-pooled.svg)
+[![Dependency Status](https://david-dm.org/doublesharp/nodemailer-mock-pooled.svg)](https://david-dm.org/doublesharp/nodemailer-mock-pooled)
+[![Dev Dependency Status](https://david-dm.org/doublesharp/nodemailer-mock-pooled/dev-status.svg)](https://david-dm.org/doublesharp/nodemailer-mock-pooled?type=dev)
+![Downloads](https://img.shields.io/npm/dt/nodemailer-mock-pooled.svg)
 
 Mocked nodemailer module for unit testing.
 
@@ -13,11 +13,11 @@ Mocked nodemailer module for unit testing.
 
 
 ```
-npm install nodemailer-mock --save-dev
+npm install nodemailer-mock-pooled --save-dev
 ```
 
 ```
-yarn add -D nodemailer-mock
+yarn add -D nodemailer-mock-pooled
 ```
 
 # mock api
@@ -41,6 +41,10 @@ There are some special methods available on the mocked module to help with testi
   * set the success message that is returned in the callback for `transport.sendMail()`
 * `nodemailerMock.mock.setFailResponse(err)`
   * set the err that is returned in the callback for `transport.sendMail()`
+* `nodemailerMock.mock.setIdle(true|false)`
+  * set the idle state for the SMTP pool
+* `nodemailerMock.mock.setShouldIdle(true|false)`
+  * set whether or not the pool should immediately idle after `transport.sendMail()`
 
 >_Note that the `.mock` methods in previous versions are aliased to the new names._
 
@@ -49,7 +53,7 @@ The mocked module behaves in a similar fashion to other transports provided by `
 
 **setup test**
 ```
-const nodemailerMock = require('nodemailer-mock');
+const nodemailerMock = require('nodemailer-mock-pooled');
 const transport = nodemailerMock.createTransport();
 
 // the email you want to send
@@ -119,7 +123,7 @@ Here is an example of using a mocked `nodemailer` class in a `mocha` test using 
 ```
 const should = require('should');
 const mockery = require('mockery');
-const nodemailerMock = require('nodemailer-mock');
+const nodemailerMock = require('nodemailer-mock-pooled');
 
 describe('Tests that send email',  async () {
 
@@ -158,7 +162,7 @@ describe('Tests that send email',  async () {
     mockery.disable();
   });
   
-  it('should send an email using nodemailer-mock', async () {
+  it('should send an email using nodemailer-mock-pooled', async () {
     // call a service that uses nodemailer
     const response = ... // <-- your email code here
     
@@ -175,7 +179,7 @@ describe('Tests that send email',  async () {
     sentMail[0].property.should.be.exactly('foobar');
   });
   
-  it('should fail to send an email using nodemailer-mock', async () {
+  it('should fail to send an email using nodemailer-mock-pooled', async () {
     // tell the mock class to return an error
     const err = 'My custom error';
     nodemailerMock.mock.setShouldFailOnce();
