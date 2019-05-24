@@ -25,6 +25,12 @@ const NodemailerMock = (function NodemailerMock() {
     let shouldFail = false;
     let shouldFailOnce = false;
 
+    // Is idle?
+    let isIdle = true;
+
+    // Should idle?
+    let shouldIdle = true;
+
     // Determine if the test should return success or failure
     const determineResponseSuccess = function determineResponseSuccess() {
         return new Promise((resolve, reject) => {
@@ -45,9 +51,28 @@ const NodemailerMock = (function NodemailerMock() {
         // indicate that we are creating a transport
         debug('createTransport', options);
 
+        let listeners = {
+            'idle': []
+        }
+
         transport = nodemailer.createTransport(options);
 
         return {
+            on: (event, listener) => {
+                if (event === 'idle' && isIdle) {
+                    listener()
+                }
+                listeners[event].push(listener)
+            },
+            isIdle: () => isIdle,
+            removeListener: (event, listener) => {
+                const li = listeners[event]
+                for (let i = 0; i < li.length; i++) {
+                    if (li[i] == listener) {
+                        li.splice(i, 1)
+                    }
+                }
+            },
             // this will mock the nodemailer.transport.sendMail()
             sendMail: (email, callback) => {
                 // indicate that sendMail() has been called
@@ -65,6 +90,13 @@ const NodemailerMock = (function NodemailerMock() {
                         info.response = successResponse;
                         // indicate that we are sending success
                         debug('transport.sendMail', 'SUCCESS', info);
+
+                        if (shouldIdle) {
+                            for (const listener of listeners['idle']) {
+                                listener()
+                            }
+                        }
+
                         // return success
                         if (isPromise) {
                             return Promise.resolve(info);
@@ -126,6 +158,26 @@ const NodemailerMock = (function NodemailerMock() {
         },
 
         /**
+         * determine if sendMail() should immediately trigger idle
+         */
+        setShouldIdle: () => {
+            shouldIdle = true;
+        },
+
+        /**
+         * determines whether or not the SMTP is currently idling.
+         * @param  {boolean} idle the new idle state
+         */
+        setIdle: (idle) => {
+            isIdle = idle
+            if (idle) {
+                for (const listener of listeners['idle']) {
+                    listener()
+                }
+            }
+        },
+
+        /**
          * determine if sendMail() should return errors
          * @param  {boolean} isFail true will return errors, false will return successes
          */
@@ -172,6 +224,8 @@ const NodemailerMock = (function NodemailerMock() {
             successResponse = messages.success_response;
             failResponse = messages.fail_response;
             mockedVerify = true;
+            isIdle = true;
+            shouldIdle = true;
         },
     };
 

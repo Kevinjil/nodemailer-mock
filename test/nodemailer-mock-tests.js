@@ -134,21 +134,26 @@ describe('Testing nodemailer-mock...', () => {
       });
     });
 
-    it('should return verify failure using the mocked nodemailer transport', (done) => {
-      nodemailer.mock.setShouldFailOnce();
-      transport.verify((err) => {
-        should(err).not.equal(null);
-        err.should.be.exactly(messages.fail_response);
-        done();
-      });
-    });
-
     it('should return verify error using the real nodemailer transport', (done) => {
       nodemailer.mock.setMockedVerify(false);
       transport.verify((err) => {
         should(err).not.equal(null);
         err.code.should.equal('ECONNECTION');
         err.command.should.equal('CONN');
+        done();
+      });
+    });
+
+    it('should idle after send', (done) => {
+      let idled = 0;
+      transport.on('idle', () => {
+        idled++;
+      });
+      should(idled).equal(1);
+      // Send an email should trigger idle
+      transport.sendMail('Email', (err, info) => {
+        should(err).equal(null);
+        should(idled).equal(2);
         done();
       });
     });
@@ -275,6 +280,20 @@ describe('Testing nodemailer-mock...', () => {
             done();
           });
     });
+
+    it('should idle after send', (done) => {
+      let idled = 0;
+      transport.on('idle', () => {
+        idled++;
+      });
+      should(idled).equal(1);
+      // Send an email should trigger idle
+      transport.sendMail('Email', (err, info) => {
+        should(err).equal(null);
+        should(idled).equal(2);
+        done();
+      });
+    });
   });
 
   describe('async/await api', () => {
@@ -395,6 +414,17 @@ describe('Testing nodemailer-mock...', () => {
         err.code.should.equal('ECONNECTION');
         err.command.should.equal('CONN');
       }
+    });
+
+    it('should idle after send', async () => {
+      let idled = 0;
+      transport.on('idle', () => {
+        idled++;
+      });
+      should(idled).equal(1);
+      // Send an email should trigger idle
+      await transport.sendMail('Email');
+      should(idled).equal(2);
     });
   });
 });
