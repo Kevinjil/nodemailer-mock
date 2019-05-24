@@ -1,6 +1,6 @@
 {
   "name": "nodemailer-mock",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "description": "Mock nodemailer module for testing",
   "main": "nodemailer-mock.js",
   "directories": {
@@ -33,6 +33,9 @@
     "stub"
   ],
   "author": "Justin Silver",
+  "contributes": {
+    "name": "Kevin Jilissen"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/doublesharp/nodemailer-mock/issues"
